@@ -1,3 +1,5 @@
+import express from "express"
+
 import { Lang } from "./defines"
 import { dbCurrentTripRequest } from "./db/Hotel/dbQueriesHotel";
 import { resendOfferCustomerDBCallback } from "./db/Hotel/dbCallbacksHotel";
