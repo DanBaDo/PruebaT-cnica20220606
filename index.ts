@@ -1,9 +1,11 @@
-
 import { db } from "../../db/database";
 import * as mailer from "../util/mailer";
 import * as moment from "moment";
+
+import { Lang } from "./defines"
+
 export async function resendOfferCustomer(req: any, res: express.Response) {
-    const lang = "CAS";
+    const lang = Lang.Castellano;
     db.HotelRequest.findAll({
         where: { offerToCustomerEmailCount: { [Op.between]: [1, 2] } },
         attributes: ["id"],
