@@ -1,13 +1,13 @@
 import express from "express";
 import moment from "moment";
 
-import { Lang } from "./defines";
+import { Lang } from "../defines";
 import * as mailer from "../util/mailer";
-import { availableHotels, dbCurrentTripRequest } from "./db/Hotel/dbQueriesHotel";
+import { availableHotels, dbCurrentTripRequest } from "../db/queries/dbQueriesHotel";
 
 export async function resendOfferCustomer(req: any, res: express.Response) {
 
-    const lang = Lang.Castellano;
+    const lang = Lang[req.params.lang] || 'CAS';
     let offset = 0;
 
     // TODO: Properly hinting type

@@ -1,3 +1,4 @@
 export enum Lang {
-    Castellano = "CAS"
+    Castellano = "CAS",
+    English = "ENG",
 }
