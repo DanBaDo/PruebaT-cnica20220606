@@ -4,7 +4,9 @@ export enum Lang {
 }
 
 export enum EmailStatus {
-    ANSWERED = "ANSWERED"
+    ANSWERED = "ANSWERED",
+    DELIVERED = "delivered",
+    OPENED = "opened"
 }
 
 export const MIN_MAIL_OFFSET = 1000 //milliseconds
