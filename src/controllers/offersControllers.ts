@@ -3,7 +3,6 @@ import moment from "moment";
 
 // TODO: import MailTypes
 import { EmailStatus, Lang } from "../defines";
-import * as mailer from "../util/mailer";
 import { dbCurrentTripRequest, availableHotels } from "../db/queries/dbQueriesHotel";
 import { getLastAcceptedMail, mailSchedulerFactory } from "./auxiliars";
 
