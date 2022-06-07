@@ -1,14 +1,19 @@
 // TODO: import MailTypes
 import moment from "moment";
-import { Lang, MIN_MAIL_OFFSET } from "../defines";
+import { EmailStatus, Lang, MIN_MAIL_OFFSET } from "../defines";
 import * as mailer from "../util/mailer";
 
+/**
+ * Returns last accepted email from array
+ * @param mailMessages 
+ * @returns 
+ */
 // TODO: Properly hinting type
 export function getLastAcceptedMail(mailMessages: any[]): any {
     return mailMessages
             .filter(
                 mail => 
-                    (mail.status === "delivered" || mail.status === "opened") &&
+                    (mail.status === EmailStatus.DELIVERED || mail.status === EmailStatus.OPENED) &&
                     mail.type === MailTypes.offerToCustomer)
             .sort(
                 (firstMail, secondMail) =>
@@ -17,6 +22,12 @@ export function getLastAcceptedMail(mailMessages: any[]): any {
             )[0];
 }
 
+/**
+ * Provides a function for sending delayed mails
+ * @param emailHR 
+ * @param {Lang} lang
+ * @returns (offset: number) => void
+ */
 // TODO: Properly hinting type
 export function mailSchedulerFactory (emailHR: any, lang: Lang) {
     return  function (offset: number) {
