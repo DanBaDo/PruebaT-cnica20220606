@@ -17,7 +17,7 @@ export function getLastAcceptedMail(mailMessages: any[]): any {
             )[0];
 }
 
-// TODO: Proper hinting type
+// TODO: Properly hinting type
 export function mailSchedulerFactory (emailHR: any, lang: Lang) {
     return  function (offset: number) {
         setTimeout(() => {
