@@ -6,4 +6,6 @@ Queda pendiente también trabajo de declaración/importación de clases e interf
 
 Además de la refactorización propuesta y ahora que disponemos de módulos y funciones que lo permiten, sería importante añadir al menos tests unitarios y también un test de integración. Disculpadme si no ejecuto esta parte. Creo que ya me estoy escediendo en el tiempo que he dedicado a la prueba pero quiero señalar la importancia de suplir esta carencia.
 
+También entiendo que sería interesante delegar el envío de los correos a un servicio específico que permitiese programar su envío de forma más fiable y controlada.
+
 He dejado anotaciones por el código marcando cuestiones pendientes o para las que necesitaría conocer las user histories o el negocio.
