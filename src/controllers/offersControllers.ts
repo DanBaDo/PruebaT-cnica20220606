@@ -1,14 +1,18 @@
-import express from "express";
+import express from "express"
 import moment from "moment";
 
-import { Lang } from "../defines";
+// TODO: import MailTypes
+import { EmailStatus, Lang } from "../defines";
 import * as mailer from "../util/mailer";
-import { availableHotels, dbCurrentTripRequest } from "../db/queries/dbQueriesHotel";
+import { dbCurrentTripRequest, availableHotels } from "../db/queries/dbQueriesHotel";
+import { getLastAcceptedMail, mailSchedulerFactory } from "./auxiliars";
 
-export async function resendOfferCustomer(req: any, res: express.Response) {
+export async function resendOfferCustomer(req: express.Request, res: express.Response) {
 
-    const lang = Lang[req.params.lang] || 'CAS';
     let offset = 0;
+
+    // Adds optional lang parameter to the request path
+    const lang: Lang = Lang[req.params.lang] || 'CAS';
 
     // TODO: Properly hinting type
     const hotelRequests: any[] = await dbCurrentTripRequest();
@@ -16,64 +20,61 @@ export async function resendOfferCustomer(req: any, res: express.Response) {
     for (let index = 0; index < hotelRequests.length; index++) {
 
         // TODO: Properly hinting type
-        const emailHR: any[] = await availableHotels(hotelRequests[index])
+        const emailHR: any[] | undefined = await availableHotels(hotelRequests[index])
 
-        if (!emailHR) {
+        // This code looks like doing nothing but cause a error.
+        // If we send a response here, code still running.
+        // When execution leaves for loop, it try to send
+        // another response, raising an error.
+        /*if (!emailHR) { // No availableHotels, stop proccesing.
             res.send({ ok: true });
-        }
+        }*/
         
-        const diffHoursBetweenRequestDateAndToday: number = moment().diff(
+        const hoursFromRequest: number = moment().diff(
             moment(hotelRequests[index].triprequest.requestDate),
             "hours"
         );
 
         // TODO: Properly hinting type
         const mailMessages: any[] = await emailHR.getMail_messages();
-        const lastAcceptedMail = mailMessages
-            .filter(
-                mail => 
-                    (mail.status === "delivered" || mail.status === "opened") &&
-                    mail.type === MailTypes.offerToCustomer)
-            .sort(
-                (firstMail, secondMail) =>
-                    parseInt(moment(secondMail.sendingDate).format("X"), 10) -
-                    parseInt(moment(firstMail.sendingDate).format("X"), 10)
-            )[0];
+
+        const lastAcceptedMail = getLastAcceptedMail(mailMessages)
+
 
         if (lastAcceptedMail) {
-            const lastDeliveredMailDiffHours: number = moment().diff(
+            const hoursFormLastAcceptedMail: number = moment().diff(
                 moment(lastAcceptedMail.sendingDate),
                 "hours"
             );
-            if (emailHR.lastStatus() === "ANSWERED") {
-                const sendMail: any = async function () {
-                    mailer.sendReceivedOfferCustomer(emailHR, lang);
-                };
+            if ( emailHR.lastStatus() === EmailStatus.ANSWERED ) {
+
+                const mailScheduler = mailSchedulerFactory (emailHR, lang);
+
                 // IDEA: solo tomar en cuenta la diferencia horaria entre el envio del mail y ahora
                 if (
-                    diffHoursBetweenRequestDateAndToday >= 24 &&
-                    diffHoursBetweenRequestDateAndToday < 48 &&
-                    lastDeliveredMailDiffHours >= 24 &&
-                    lastDeliveredMailDiffHours < 48
+                    hoursFromRequest >= 24 &&
+                    hoursFromRequest < 48 &&
+                    hoursFormLastAcceptedMail >= 24 &&
+                    hoursFormLastAcceptedMail < 48
                 ) {
-                    offset += 1000;
-                    setTimeout(() => {
-                        sendMail();
-                        emailHR.addOneToOfferToCustomerEmailCount();
-                    }, 1000 + offset);
+                    mailScheduler(offset+=1000)
                 }
                 if (
-                    diffHoursBetweenRequestDateAndToday >= 48 &&
-                    lastDeliveredMailDiffHours >= 48
+                    hoursFromRequest >= 48 &&
+                    hoursFormLastAcceptedMail >= 48
                 ) {
-                    offset += 1000;
-                    setTimeout(() => {
-                        sendMail();
-                        emailHR.addOneToOfferToCustomerEmailCount();
-                    }, 1000 + offset);
+                    mailScheduler(offset+=1000)
                 }
             }
         }
     }
+
+    /**
+     * We are respondig 200 { ok: true } anyway. 
+     * If it's not important proccess completion, we can send response
+     * firt thing in controller for sorting request time response.
+     * If proccess completion is important, we need to add some kind of
+     * exception control and give a proper significant response.
+     */
     res.send({ ok: true });
 }
